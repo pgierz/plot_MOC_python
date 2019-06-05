@@ -229,7 +229,14 @@ if __name__ == '__main__':
                 binned[lev, bins] = np.nansum(W_elem_mean_weight[indices])
 
     # Generate cummulative sum:
-    binned = np.ma.cumsum(np.ma.masked_invalid(binned), axis=1)
+    binned = np.ma.masked_invalid(binned)
+    # NOTE: Integrate starting at the NORTH of the array, multiple by -1 to get
+    # the sign correct again (since we are integrating the wrong way around)
+    #
+    # Starting from the north ensures useful AMOC integration, since the
+    # southern boundary of AMOC has some flow already, starting there makes no
+    # sense.
+    binned = -np.ma.cumsum(binned[:,::-1], axis=1)[:,::-1]
 
     show_step('saving results')
     binned_ds = xr.Dataset(
